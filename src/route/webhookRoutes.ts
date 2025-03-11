@@ -1,8 +1,9 @@
-import express from "express";
+import express,{raw} from "express";
+
 import {createUser} from '../controller/webhookController.ts'
 const router = express.Router();
 
 
-router.post("/user", createUser);
+router.post("/",  raw({ type: 'application/json' }),createUser);
 
 export default router;

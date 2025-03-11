@@ -1,11 +1,13 @@
 import { Request, Response, NextFunction } from 'express';
-import { createUserService } from "../services/webhookService.ts";
+import { handelWebhooks } from "../services/webhookService.ts";
+import { nextTick } from "node:process";
 
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const newUser = await createUserService(req.body);
-      res.status(201).json(newUser);
-    } catch (error) {
-      next(error);
-    }
-  };
+   try {
+    const response = await handelWebhooks(req,res)
+    console.log(response);
+    
+   } catch (error) {
+    next(error)
+   }
+}
