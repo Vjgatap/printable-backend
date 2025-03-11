@@ -1435,8 +1435,12 @@
     "packageJson": {
       "dependencies": [
         "npm:@aws-sdk/client-s3@^3.758.0",
+        "npm:@neondatabase/serverless@~0.10.4",
+        "npm:@types/express@5",
         "npm:cors@^2.8.5",
         "npm:dotenv@^16.4.7",
+        "npm:drizzle-kit@~0.30.5",
+        "npm:drizzle-orm@0.40",
         "npm:express@^4.21.2",
         "npm:morgan@^1.10.0",
         "npm:multer-s3@^3.0.1",
