@@ -1,13 +1,13 @@
-import { config } from 'dotenv';
+
+
 import { defineConfig } from "drizzle-kit";
 
-config({ path: '.env' });
 
 export default defineConfig({
   schema: "./src/db/schema.ts",
   out: "./migrations",
   dialect: "postgresql",
   dbCredentials: {
-    url: Deno.env.get("DATABASE_URL")!,
+    url: "postgresql://neondb_owner:npg_XRSN6kcE7ylA@ep-rough-glitter-a15ya1tf-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=require",
   },
 });

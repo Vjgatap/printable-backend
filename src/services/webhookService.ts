@@ -1,60 +1,54 @@
-import {Response,Request} from 'express'
-import {Webhook} from 'svix'
-export const handelWebhooks = async (req:Request, res:Response) => {
-    const SIGNING_SECRET = process.env.SIGNING_SECRET
+import { Response, Request } from "express";
+import { UserCreatedEvent, UserPayloadType } from "../types/webhook/user.ts";
+import { users } from "../db/schema.ts";
+import { db } from "../configs/db.ts";
+import {eq} from "drizzle-orm"
+export const handelWebhooks = async (req: Request, res: Response) => {
+  const payload: UserPayloadType = req.body;
+  console.log(payload);
 
-    if (!SIGNING_SECRET) {
-      throw new Error('Error: Please add SIGNING_SECRET from Clerk Dashboard to .env')
-    }
+  switch (payload.type) {
+    case "user.created":
+      try {
+        const userData = payload.data;
 
-    // Create new Svix instance with secret
-    const wh = new Webhook(SIGNING_SECRET)
+        const response = await db.insert(users).values({
+          id: userData.id,
+          name: `${userData.first_name} ${userData.last_name}`,
+          email: userData.email_addresses[0]?.email_address || "",
+          phone: userData.phone_numbers[0],
+        });
 
-    // Get headers and body
-    const headers = req.headers
-    const payload = req.body
+        return res.status(201).json({
+          message: "User created successfully",
+          user: response,
+        });
+      } catch (error) {
+        console.error("Error inserting user:", error);
+        return res.status(400).json({ error: "Failed to create user" });
+      }
 
-    // Get Svix headers for verification
-    const svix_id = headers['svix-id']
-    const svix_timestamp = headers['svix-timestamp']
-    const svix_signature = headers['svix-signature']
+    case "user.deleted":
+      try {
+        const userData = payload.data;
 
-    // If there are no headers, error out
-    if (!svix_id || !svix_timestamp || !svix_signature) {
-      return void res.status(400).json({
-        success: false,
-        message: 'Error: Missing svix headers',
-      })
-    }
+        const response = await db.delete(users).where(eq(users.id,payload.data.id))
 
-    let evt:any
+        return res.status(204).json({
+          message: "User deleted successfully",
+          user: response,
+        });
+      } catch (error) {
+        console.error("Error deleting user:", error);
+        return res.status(400).json({ error: "Failed to delete user" });
+      }
+      break;
 
-    // Attempt to verify the incoming webhook
-    // If successful, the payload will be available from 'evt'
-    // If verification fails, error out and return error code
-    try {
-      evt = wh.verify(JSON.stringify(payload), {
-        'svix-id': svix_id as string,
-        'svix-timestamp': svix_timestamp as string,
-        'svix-signature': svix_signature as string,
-      })
-    } catch (err:any) {
-      console.log('Error: Could not verify webhook:', err.message)
-      return void res.status(400).json({
-        success: false,
-        message: err.message,
-      })
-    }
-
-    // Do something with payload
-    // For this guide, log payload to console
-    const { id } = evt.data
-    const eventType = evt.type
-    console.log(`Received webhook with ID ${id} and event type of ${eventType}`)
-    console.log('Webhook payload:', evt.data)
-
-    return {
-        eventType,
-        data:evt.data
-    }
-}
+    default:
+      return console.log({
+        error: "Unsupported event type",
+        eventType: payload.type,
+        payload: payload.data,
+      });
+  }
+};
