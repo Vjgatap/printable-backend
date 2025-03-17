@@ -1,11 +1,13 @@
 import express from 'express'
-import fileRoute from './fileRoutes.ts'
-import webhookRoute from './webhookRoutes.ts'
+import fileRouter from './fileRoutes.ts'
+import webhookRouter from './webhookRoutes.ts'
+import userRouter from './userRoutes.ts'
 const router = express.Router();
 
 
 
-router.use('/file', fileRoute);
-router.use('/webhook', webhookRoute);
+router.use('/file', fileRouter);
+router.use('/webhook', webhookRouter);
+router.use('/user',userRouter)
 
 export default router;

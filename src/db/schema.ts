@@ -1,12 +1,20 @@
 import { pgTable, serial, text, timestamp, integer, jsonb } from "drizzle-orm/pg-core";
 
+
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   email: text("email").unique().notNull(),
+  phone: text("phone").unique(),
+  state: text("state"), 
+  city: text("city"), 
+  address: text("address"), 
+  latitude: text("latitude"), 
+  longitude: text("longitude"), 
   createdAt: timestamp("created_at").defaultNow().notNull(),
-  phone: text("phone").unique()
 });
+
+
 
 export const merchants = pgTable("merchants", {
   id: text("id").primaryKey(),
@@ -21,13 +29,44 @@ export const orders = pgTable("orders", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   merchantId: text("merchant_id").references(() => merchants.id, { onDelete: "cascade" }),
-  status: text("status").default("pending").notNull(), // e.g., pending, accepted, printing, completed, etc.
+  status: text("status").default("pending").notNull(),
   totalAmount: integer("total_amount").notNull(),
-  copies: integer("copies").default(1).notNull(), // Number of copies to print
-  paperType: text("paper_type"), // e.g., A4, Letter, Glossy, etc.
-  printInstructions: text("print_instructions"), // Special instructions for the print order
-  documents: jsonb("documents"), // JSON array to hold document metadata (e.g., file name, URL, etc.)
-  paymentMethod: text("payment_method").notNull(), // e.g., online, COD, etc.
-  scheduledPrintTime: timestamp("scheduled_print_time"), // Scheduled print time (optional)
+  paymentMethod: text("payment_method").notNull(),
+  scheduledPrintTime: timestamp("scheduled_print_time"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+
+ 
+  fulfillmentType: text("fulfillment_type").default("delivery").notNull(), // "takeaway" or "delivery"
+
+  // Optional delivery address fields (if not taking away)
+  state: text("state"),
+  city: text("city"),
+  address: text("address"),
+  latitude: text("latitude"),
+  longitude: text("longitude"),
+
+  // JSONB to store multiple documents and their print settings
+  documents: jsonb("documents").notNull(),
 });
+
+// EXAMPLE OF JSONB FOR DOCUMENTS COLUMN IN ORDERS TABLE
+// [
+//   {
+//     "fileName": "assignment.pdf",
+//     "fileUrl": "https://example.com/assignment.pdf",
+//     "copies": 2,
+//     "colorType": "color", 
+//     "paperType": "A4",
+//     "printType": "front_and_back",
+//     "pageDirection": "vertical"
+//   },
+//   {
+//     "fileName": "notes.pdf",
+//     "fileUrl": "https://example.com/notes.pdf",
+//     "copies": 1,
+//     "colorType": "black_and_white", 
+//     "paperType": "Letter",
+//     "printType": "front",
+//     "pageDirection": "horizontal"
+//   }
+// ]

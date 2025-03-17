@@ -1,6 +1,11 @@
 
 
-export type UserPayloadType=UserDeletedEvent|UserCreatedEvent|UserUpdatedEvent
+export type UserPayloadType=UserDeletedEvent|UserCreatedEvent|UserUpdatedEvent | userAnyEvent
+
+export type userAnyEvent={
+  data:any,
+  type:any
+}
 
 export type UserUpdatedEvent = {
   data: {

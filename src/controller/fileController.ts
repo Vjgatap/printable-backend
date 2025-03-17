@@ -22,6 +22,9 @@ const upload = multer({
 }).single("file");
 
 export const uploadFile = (req:any, res:any) => {
+
+  
+
   upload(req, res, (err:any) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json({ message: "File uploaded successfully", fileUrl: req.file.location });
@@ -40,7 +43,7 @@ export const getFile = async (req:any, res:any) => {
     };
 
     const command = new GetObjectCommand(params);
-    const { Body } = await s3.send(command);
+    const { Body } = await s3.send(command); 
     
     res.attachment(req.params.filename);
     Body.pipe(res);
