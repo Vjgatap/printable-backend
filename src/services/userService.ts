@@ -4,8 +4,7 @@ import { eq } from "drizzle-orm";
 
 export interface UserUpdatePayload {
   id: string;
-  first_name: string;
-  last_name: string;
+  name: string;
   email: string;
   phone?: string;
   state?: string;
@@ -17,11 +16,19 @@ export interface UserUpdatePayload {
 
 export class UserService {
 
-  public async updateUser(payload: UserUpdatePayload) {
+  public async getUser(id: string) {
+    const result = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+
+    return result.length > 0 ? result[0] : null;
+  }
+
+  public async updateUser(payload: UserUpdatePayload,id:string) {
     const {
-      id,
-      first_name,
-      last_name,
+      name,
       email,
       phone,
       state,
@@ -31,7 +38,6 @@ export class UserService {
       longitude,
     } = payload;
 
-    const name = `${first_name} ${last_name}`.trim();
 
     const result = await db
       .update(users)
