@@ -41,16 +41,23 @@ export class OrderService {
     return result.length > 0 ? result[0] : null;
   }
 
-  // Get orders for a merchant using the merchant ID
   public async getOrdersByMerchantId(merchantId: string) {
     const result = await db
       .select()
       .from(orders)
       .where(eq(orders.merchantId, merchantId));
+
     return result;
   }
 
-  // Create a new order
+  public async getOrdersByUserId(userId: string) {
+    const result = await db
+      .select()
+      .from(orders)
+      .where(eq(orders.userId, userId));
+      
+    return result;
+  }
   public async createOrder(payload: OrderCreatePayload) {
     const id = crypto.randomUUID();
     const result = await db
@@ -60,7 +67,6 @@ export class OrderService {
     return result[0];
   }
 
-  // Update an existing order by order ID
   public async updateOrder(orderId: string, payload: OrderUpdatePayload) {
     const result = await db
       .update(orders)

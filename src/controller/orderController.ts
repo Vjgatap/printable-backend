@@ -1,15 +1,23 @@
 import { Request, Response, NextFunction } from "express";
-import { OrderService, OrderCreatePayload, OrderUpdatePayload } from "../services/orderService.ts";
+import {
+  OrderService,
+  OrderCreatePayload,
+  OrderUpdatePayload,
+} from "../services/orderService.ts";
 
 const orderService = new OrderService();
 
-export const getOrder = async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
+export const getOrder = async (
+  req: Request<{ id: string }>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
-    if (!id)  res.status(400).json({ error: "Order ID is required" });
+    if (!id) res.status(400).json({ error: "Order ID is required" });
 
     const order = await orderService.getOrder(id);
-    if (!order)  res.status(404).json({ error: "Order not found" });
+    if (!order) res.status(404).json({ error: "Order not found" });
 
     res.status(200).json(order);
   } catch (error) {
@@ -17,15 +25,14 @@ export const getOrder = async (req: Request<{ id: string }>, res: Response, next
   }
 };
 
-// GET orders for a merchant by merchant ID
 export const getOrdersByMerchant = async (
-  req: Request<{ merchantId: string }>, 
-  res: Response, 
+  req: Request<{ merchantId: string }>,
+  res: Response,
   next: NextFunction
 ) => {
   try {
     const { merchantId } = req.params;
-    if (!merchantId)  res.status(400).json({ error: "Merchant ID is required" });
+    if (!merchantId) res.status(400).json({ error: "Merchant ID is required" });
 
     const orders = await orderService.getOrdersByMerchantId(merchantId);
     res.status(200).json(orders);
@@ -34,10 +41,30 @@ export const getOrdersByMerchant = async (
   }
 };
 
-// POST create a new order
-export const createOrder = async (req: Request<{}, {}, OrderCreatePayload>, res: Response, next: NextFunction) => {
+export const getOrdersByUserId = async (
+  req: Request<{ userId: string }>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const payload = req.body;
+    const { userId } = req.params;
+    if (!userId) res.status(400).json({ error: "user ID is required" });
+
+    const orders = await orderService.getOrdersByUserId(userId);
+    res.status(200).json(orders);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+export const createOrder = async (
+  req: Request<{}, {}, OrderCreatePayload>,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const payload:OrderCreatePayload = req.body;
     const newOrder = await orderService.createOrder(payload);
     res.status(201).json({
       message: "Order created successfully",
@@ -48,15 +75,19 @@ export const createOrder = async (req: Request<{}, {}, OrderCreatePayload>, res:
   }
 };
 
-// PATCH update an existing order by its ID
-export const updateOrder = async (req: Request<{ id: string }, {}, OrderUpdatePayload>, res: Response, next: NextFunction) => {
+export const updateOrder = async (
+  req: Request<{ id: string }, {}, OrderUpdatePayload>,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
     const payload = req.body;
-    if (!id)  res.status(400).json({ error: "Order ID is required" });
+    if (!id) res.status(400).json({ error: "Order ID is required" });
 
     const updatedOrder = await orderService.updateOrder(id, payload);
-    if (!updatedOrder)  res.status(404).json({ error: "Order not found or update failed" });
+    if (!updatedOrder)
+      res.status(404).json({ error: "Order not found or update failed" });
 
     res.status(200).json({
       message: "Order updated successfully",
