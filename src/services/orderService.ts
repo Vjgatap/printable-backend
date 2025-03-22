@@ -1,3 +1,4 @@
+import Pusher from "pusher";
 import { orders } from "../db/schema.ts";
 import { db } from "../configs/db.ts";
 import { eq } from "drizzle-orm";
@@ -32,6 +33,18 @@ export interface OrderUpdatePayload {
 }
 
 export class OrderService {
+  private pusher: Pusher;
+
+  constructor() {
+    this.pusher = new Pusher({
+      appId: Deno.env.get("PUSHER_APP_ID") || "",
+      key: Deno.env.get("PUSHER_KEY") || "",
+      secret: Deno.env.get("PUSHER_SECRET") || "",
+      cluster: Deno.env.get("PUSHER_CLUSTER") || "",
+      useTLS: true,
+    });
+  }
+
   public async getOrder(orderId: string) {
     const result = await db
       .select()
@@ -46,7 +59,6 @@ export class OrderService {
       .select()
       .from(orders)
       .where(eq(orders.merchantId, merchantId));
-
     return result;
   }
 
@@ -55,24 +67,55 @@ export class OrderService {
       .select()
       .from(orders)
       .where(eq(orders.userId, userId));
-      
     return result;
   }
+
   public async createOrder(payload: OrderCreatePayload) {
     const id = crypto.randomUUID();
     const result = await db
       .insert(orders)
-      .values({id,...payload})
+      .values({ id, ...payload })
       .returning();
-    return result[0];
+    const order = result[0];
+
+    // Trigger a realtime event to notify the merchant
+    await this.pusher.trigger(
+      `private-merchant-${payload.merchantId}`,
+      "new-order",
+      {
+        orderId: order.id,
+        userId: payload.userId,
+        totalAmount: payload.totalAmount,
+        documents: payload.documents,
+        scheduledPrintTime: payload.scheduledPrintTime,
+      }
+    );
+
+    return order;
   }
 
   public async updateOrder(orderId: string, payload: OrderUpdatePayload) {
     const result = await db
       .update(orders)
-      .set({...payload,updatedAt:new Date()})
+      .set({ ...payload, updatedAt: new Date() })
       .where(eq(orders.id, orderId))
       .returning();
-    return result[0];
+    const order = result[0];
+
+    if (
+      payload.status &&
+      (payload.status === "accepted" || payload.status === "declined" || payload.status === "completed" || payload.status === "cancelled")
+    ) {
+      await this.pusher.trigger(
+        `private-user-${order.userId}`,
+        "order-updated",
+        {
+          orderId: order.id,
+          status: order.status,
+        }
+      );
+    }
+
+    return order;
   }
 }

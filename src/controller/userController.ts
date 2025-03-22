@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { UserService, UserUpdatePayload } from "../services/userService.ts";
+import { log } from "node:console";
 
 const userService = new UserService();
 
@@ -46,6 +47,31 @@ export const updateUserController = async (
     });
   } catch (error) {
     console.error("Error updating user:", error);
+    next(error);
+  }
+};
+
+export const getNearestMerchants = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  
+  try {
+
+    
+    const lat = parseFloat(req.query.lat as string);
+    const lang = parseFloat(req.query.lang as string); 
+    
+   if (isNaN(lat) || isNaN(lang)) {
+      res.status(400).json({ error: "Invalid latitude or longitude" });
+   }
+   
+   const nearestMerchants = await userService.getNearestMerchants(lat.toString(),lang.toString())
+
+   res.status(200).json(nearestMerchants);
+  } catch (error) {
+    console.error("Error finding nearest merchants:", error);
     next(error);
   }
 };
