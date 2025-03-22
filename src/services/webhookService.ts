@@ -58,6 +58,7 @@ export class WebhookService {
               name: `${userData.first_name} ${userData.last_name}`,
               email: userData.email_addresses[0]?.email_address || "", 
               phone: userData.phone_numbers[0],
+              updatedAt:new Date()
             })
             .where(eq(users.id, payload.data.id));
 

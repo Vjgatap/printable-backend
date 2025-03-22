@@ -1,6 +1,6 @@
 {
-  "id": "a0b69ddd-a28d-4f59-bbbc-5587b3d6dc7a",
-  "prevId": "25a0833a-63d8-438c-ab78-0d838505e75d",
+  "id": "608f6995-a500-45d3-9e91-fd67628735d9",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -26,20 +26,22 @@
           "primaryKey": false,
           "notNull": true
         },
-        "address": {
-          "name": "address",
-          "type": "text",
+        "images": {
+          "name": "images",
+          "type": "text[]",
           "primaryKey": false,
-          "notNull": true
-        },
-        "contact": {
-          "name": "contact",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
+          "notNull": false,
+          "default": "ARRAY[]::text[]"
         },
         "created_at": {
           "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true,
@@ -103,31 +105,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "copies": {
-          "name": "copies",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 1
-        },
-        "paper_type": {
-          "name": "paper_type",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "print_instructions": {
-          "name": "print_instructions",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "documents": {
-          "name": "documents",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "payment_method": {
           "name": "payment_method",
           "type": "text",
@@ -146,6 +123,56 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "fulfillment_type": {
+          "name": "fulfillment_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'delivery'"
+        },
+        "state": {
+          "name": "state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "city": {
+          "name": "city",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "latitude": {
+          "name": "latitude",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "longitude": {
+          "name": "longitude",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "documents": {
+          "name": "documents",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
         }
       },
       "indexes": {},
@@ -240,6 +267,13 @@
           "type": "text",
           "primaryKey": false,
           "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
         },
         "created_at": {
           "name": "created_at",

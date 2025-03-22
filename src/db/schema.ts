@@ -1,4 +1,7 @@
 import { pgTable, serial, text, timestamp, integer, jsonb } from "drizzle-orm/pg-core";
+import{sql} from 'drizzle-orm'
+import { relations } from "drizzle-orm";
+
 
 
 export const users = pgTable("users", {
@@ -11,6 +14,7 @@ export const users = pgTable("users", {
   address: text("address"), 
   latitude: text("latitude"), 
   longitude: text("longitude"), 
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -20,10 +24,12 @@ export const merchants = pgTable("merchants", {
   id: text("id").primaryKey(),
   userId: text("user_id").references(() => users.id, { onDelete: "cascade" }),
   shopName: text("shop_name").notNull(),
-  address: text("address").notNull(),
-  contact: text("contact").notNull(),
+  shopImages: text("images").array().default(sql`ARRAY[]::text[]`),
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+
 
 export const orders = pgTable("orders", {
   id: text("id").primaryKey(),
@@ -34,8 +40,8 @@ export const orders = pgTable("orders", {
   paymentMethod: text("payment_method").notNull(),
   scheduledPrintTime: timestamp("scheduled_print_time"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
-
- 
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  
   fulfillmentType: text("fulfillment_type").default("delivery").notNull(), // "takeaway" or "delivery"
 
   // Optional delivery address fields (if not taking away)
@@ -48,6 +54,22 @@ export const orders = pgTable("orders", {
   // JSONB to store multiple documents and their print settings
   documents: jsonb("documents").notNull(),
 });
+
+// RELATIONS
+export const merchantsRelations = relations(merchants, ({ many }) => ({
+  orders: many(orders), // A merchant can have multiple orders
+}));
+
+export const ordersRelations = relations(orders, ({ one }) => ({
+  merchant: one(merchants, {
+    fields: [orders.merchantId],
+    references: [merchants.id],
+  }),
+}));
+
+
+
+
 
 // EXAMPLE OF JSONB FOR DOCUMENTS COLUMN IN ORDERS TABLE
 // [

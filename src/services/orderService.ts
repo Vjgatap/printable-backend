@@ -70,7 +70,7 @@ export class OrderService {
   public async updateOrder(orderId: string, payload: OrderUpdatePayload) {
     const result = await db
       .update(orders)
-      .set(payload)
+      .set({...payload,updatedAt:new Date()})
       .where(eq(orders.id, orderId))
       .returning();
     return result[0];

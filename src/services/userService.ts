@@ -50,6 +50,7 @@ export class UserService {
         address,
         latitude,
         longitude,
+        updatedAt:new Date()
       })
       .where(eq(users.id, id));
 
