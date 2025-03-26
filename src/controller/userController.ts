@@ -5,19 +5,19 @@ import { log } from "node:console";
 const userService = new UserService();
 
 export const getUserController = async (
-  req: Request<{ id: string }>, 
-  res: Response, 
+  req: Request<{ id: string }>,
+  res: Response,
   next: NextFunction
 ) => {
   try {
     const { id } = req.params;
 
     if (!id) {
-       res.status(400).json({ error: "User ID is required" });
+      res.status(400).json({ error: "User ID is required" });
     }
     const user = await userService.getUser(id);
     if (!user) {
-       res.status(404).json({ error: "User not found" });
+      res.status(404).json({ error: "User not found" });
     }
     res.status(200).json(user);
   } catch (error) {
@@ -37,7 +37,7 @@ export const updateUserController = async (
     if (!id) {
       res.status(400).json({ error: "User ID is required" });
     }
-    const updatedUser = await userService.updateUser( {...payload}, id );
+    const updatedUser = await userService.updateUser({ ...payload }, id);
     if (!updatedUser) {
       res.status(404).json({ error: "User not found" });
     }
@@ -56,24 +56,22 @@ export const getNearestMerchants = async (
   res: Response,
   next: NextFunction
 ) => {
-  
   try {
-
-    
     const lat = parseFloat(req.query.lat as string);
-    const lang = parseFloat(req.query.lang as string); 
-    
-   if (isNaN(lat) || isNaN(lang)) {
-      res.status(400).json({ error: "Invalid latitude or longitude" });
-   }
-   
-   const nearestMerchants = await userService.getNearestMerchants(lat.toString(),lang.toString())
+    const lang = parseFloat(req.query.lang as string);
 
-   res.status(200).json(nearestMerchants);
+    if (isNaN(lat) || isNaN(lang)) {
+      res.status(400).json({ error: "Invalid latitude or longitude" });
+    }
+
+    const nearestMerchants = await userService.getNearestMerchants(
+      lat.toString(),
+      lang.toString()
+    );
+
+    res.status(200).json(nearestMerchants);
   } catch (error) {
     console.error("Error finding nearest merchants:", error);
     next(error);
   }
 };
-
-

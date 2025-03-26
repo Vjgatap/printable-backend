@@ -1,7 +1,8 @@
-import { users,merchants } from "../db/schema.ts";
+import { users, merchants } from "../db/schema.ts";
 import { db } from "../configs/db.ts";
 import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
+import { getNearestMerchantsWithDistance } from "../lib/api.ts";
 export interface UserUpdatePayload {
   id: string;
   name: string;
@@ -55,11 +56,14 @@ export class UserService {
         sin(radians(${lat})) * sin(radians(cast(${users}.latitude as numeric)))
       )
     )`;
-    
+    console.log({ lat, lang });
+
     const nearestMerchantsQuery = db
       .select({
         merchantId: merchants.id,
         shopName: merchants.shopName,
+        merchantLat: users.latitude,
+        merchantLong: users.longitude,
         distance: distanceExpression, // This will add a "distance" column to the results
       })
       .from(merchants)
@@ -69,7 +73,12 @@ export class UserService {
       .orderBy(distanceExpression)
       // Limit to top 10 nearest merchants
       .limit(10);
+    //
+    const nearestMerchants = await nearestMerchantsQuery.execute();
 
-      return nearestMerchantsQuery
+    return getNearestMerchantsWithDistance(
+      [parseFloat(lat), parseFloat(lang)],
+      nearestMerchants
+    );
   }
 }
