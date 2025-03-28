@@ -1,44 +1,41 @@
-import axios from "axios";
+const API_KEY = Deno.env.get("DISTANCE_MATRIX_GOOGLE_API_KEY");
+const BASE_URL = Deno.env.get("GOOGLE_API_BASE_URL");
 
-const API_KEY = "5b3ce3597851110001cf6248d34233557de144998a2fdbd8e7bac08e";
-const BASE_URL = "https://api.openrouteservice.org/v2/matrix/driving-car";
 export const getNearestMerchantsWithDistance = async (
   origin: [number, number],
-  merchants: any
+  merchants: any,
 ) => {
-  const destinations = merchants.map((m: any) => [
-    parseFloat(m.merchantLat),
-    parseFloat(m.merchantLong),
-  ]);
-
+  const destinations = merchants
+    .map((m: any) => `${m.merchantLat},${m.merchantLong}`)
+    .join("|"); // Google API requires '|' as separator
   try {
-    const response = await fetch(BASE_URL, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        Authorization: API_KEY,
+    const response = await fetch(
+      `${BASE_URL}?origins=${origin[0]},${origin[1]}&destinations=${destinations}&mode=driving&departure_time=now&key=${API_KEY}`,
+
+      {
+        method: "GET",
+
+        headers: {
+          Accept: "application/json",
+        },
       },
-      body: JSON.stringify({
-        locations: [origin, ...destinations],
-        metrics: ["distance"],
-      }),
-    });
-
+    );
     const result = await response.json();
-    const dist = result.distances[0];
+    if (!result.rows || !result.rows[0])
+      throw new Error("Invalid API response");
 
-    const data = merchants.map((m, index) => ({
+    return merchants.map((m: any, index: number) => ({
       merchantId: m.merchantId,
       shopName: m.shopName,
       merchantLat: m.merchantLat,
       merchantLong: m.merchantLong,
-      distance: `${dist[index + 1] / 1000}km`, // Convert meters to km
+      distance: result.rows[0].elements[index].distance.text,
+      estimated_reaching_time: result.rows[0].elements[index].duration.text,
+      estimated_reaching_time_with_traffic:
+        result.rows[0].elements[index].duration_in_traffic.text,
     }));
-
-    return data;
   } catch (error) {
-    console.error("ORS API Error:", error);
+    console.error("Google API Error:", error);
     return null;
   }
 };
