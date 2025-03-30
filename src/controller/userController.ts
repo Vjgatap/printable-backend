@@ -58,15 +58,15 @@ export const getNearestMerchants = async (
 ) => {
   try {
     const lat = parseFloat(req.query.lat as string);
-    const lang = parseFloat(req.query.lang as string);
+    const long = parseFloat(req.query.long as string);
 
-    if (isNaN(lat) || isNaN(lang)) {
+    if (isNaN(lat) || isNaN(long)) {
       res.status(400).json({ error: "Invalid latitude or longitude" });
     }
 
     const nearestMerchants = await userService.getNearestMerchants(
       lat.toString(),
-      lang.toString()
+      long.toString()
     );
 
     res.status(200).json(nearestMerchants);

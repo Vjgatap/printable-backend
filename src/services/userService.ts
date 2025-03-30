@@ -2,7 +2,7 @@ import { users, merchants } from "../db/schema.ts";
 import { db } from "../configs/db.ts";
 import { eq } from "drizzle-orm";
 import { sql } from "drizzle-orm";
-import { getNearestMerchantsWithDistance } from "../lib/api.ts";
+import { getDistanceMatrix } from "./distanceMatrixService.ts";
 export interface UserUpdatePayload {
   id: string;
   name: string;
@@ -48,23 +48,24 @@ export class UserService {
     return result;
   }
 
-  public async getNearestMerchants(lat: string, lang: string) {
+  public async getNearestMerchants(lat: string, long: string) {
     const distanceExpression = sql<string>`(
       6371 * acos(
         cos(radians(${lat})) * cos(radians(cast(${users}.latitude as numeric))) *
-        cos(radians(cast(${users}.longitude as numeric)) - radians(${lang})) +
+        cos(radians(cast(${users}.longitude as numeric)) - radians(${long})) +
         sin(radians(${lat})) * sin(radians(cast(${users}.latitude as numeric)))
       )
     )`;
-    console.log({ lat, lang });
+    console.log({ lat, long });
 
     const nearestMerchantsQuery = db
       .select({
         merchantId: merchants.id,
         shopName: merchants.shopName,
-        merchantLat: users.latitude,
-        merchantLong: users.longitude,
-        distance: distanceExpression, // This will add a "distance" column to the results
+        MerchantImages:merchants.shopImages,
+        distance: distanceExpression, 
+        lat:users.latitude,
+        long:users.longitude
       })
       .from(merchants)
       // Join with the users table to access lat/long columns from the related user
@@ -75,10 +76,9 @@ export class UserService {
       .limit(10);
     //
     const nearestMerchants = await nearestMerchantsQuery.execute();
-
-    return getNearestMerchantsWithDistance(
-      [parseFloat(lat), parseFloat(lang)],
-      nearestMerchants
-    );
+ 
+    const distanceMatrix = await getDistanceMatrix([Number(lat),Number(long)],nearestMerchants) 
+    return distanceMatrix
+    // const distanceMatrix = await getDistanceMatrix([Number(lat),Number(long)],destinations)
   }
 }
