@@ -68,17 +68,12 @@ export class UserService {
         long:users.longitude
       })
       .from(merchants)
-      // Join with the users table to access lat/long columns from the related user
       .innerJoin(users, sql`${merchants.userId} = ${users.id}`)
-      // Order by the computed distance
       .orderBy(distanceExpression)
-      // Limit to top 10 nearest merchants
       .limit(10);
-    //
     const nearestMerchants = await nearestMerchantsQuery.execute();
  
     const distanceMatrix = await getDistanceMatrix([Number(lat),Number(long)],nearestMerchants) 
     return distanceMatrix
-    // const distanceMatrix = await getDistanceMatrix([Number(lat),Number(long)],destinations)
   }
 }
