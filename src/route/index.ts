@@ -4,6 +4,7 @@ import webhookRouter from './webhookRoutes.ts'
 import userRouter from './userRoutes.ts'
 import orderRouter from './orderRoute.ts'
 import merchantRouter from './merchantRoutes.ts'
+import esignRouter from './esignRoutes.ts'
 const router = express.Router();
 
 
@@ -13,4 +14,5 @@ router.use('/webhook', webhookRouter);
 router.use('/user',userRouter)
 router.use('/order',orderRouter)
 router.use('/merchant',merchantRouter)
+router.use("/esign",esignRouter);
 export default router;
