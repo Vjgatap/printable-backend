@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { EsignService } from "../services/esignService";
+import { EsignService } from "../services/esignService.ts";
 const esignService = new EsignService();
 export const sendSigningRequest = async (
   req: Request<{ id: string }>,
@@ -19,11 +19,9 @@ export const getSignedNotification = async (
   res: Response,
   next: NextFunction,
 ) => {
-    try{
-
-       if (!id) res.status(400).json({ error: "order id is required" });
-    }catch(error){
-        next(error)
-
-    }
+  try {
+    if (!id) res.status(400).json({ error: "order id is required" });
+  } catch (error) {
+    next(error);
+  }
 };
