@@ -62,18 +62,20 @@ export class UserService {
       .select({
         merchantId: merchants.id,
         shopName: merchants.shopName,
-        MerchantImages:merchants.shopImages,
-        distance: distanceExpression, 
-        lat:users.latitude,
-        long:users.longitude
+        MerchantImages: merchants.shopImages,
+        distance: distanceExpression,
+        lat: users.latitude,
+        long: users.longitude,
       })
       .from(merchants)
       .innerJoin(users, sql`${merchants.userId} = ${users.id}`)
       .orderBy(distanceExpression)
       .limit(10);
     const nearestMerchants = await nearestMerchantsQuery.execute();
- 
-    const distanceMatrix = await getDistanceMatrix([Number(lat),Number(long)],nearestMerchants) 
-    return distanceMatrix
+    const distanceMatrix = await getDistanceMatrix(
+      [Number(lat), Number(long)],
+      nearestMerchants,
+    );
+    return distanceMatrix;
   }
 }
